@@ -1,0 +1,15 @@
+Учебные заметки по коду занятия LangChain
+
+В примере url_parser.py используется модель Gemini gemini-2.5-flash.
+Ключ API читается из переменной окружения GEMINI_API_KEY.
+Функция load_dotenv загружает настройки из файла .env.
+WebBaseLoader получает содержимое веб-страницы и извлекает из него текст.
+ChatPromptTemplate создаёт шаблон запроса к модели.
+create_stuff_documents_chain объединяет тексты документов, подставляет их
+в шаблон запроса и передаёт запрос языковой модели.
+Текст документа LangChain хранится в поле page_content.
+В примере pdf_parser.py загрузчик PyPDFLoader читает PDF-файл PyLLM_5.pdf.
+InMemoryVectorStore хранит векторные представления в памяти.
+Вызов similarity_search("prompthub", k=2) ищет два подходящих документа.
+В примере url_parser_local.py используется локальная модель
+Qwen/Qwen2.5-0.5B-Instruct.
