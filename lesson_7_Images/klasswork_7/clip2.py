@@ -80,8 +80,10 @@ def main():
 
     # Каждое описание в списке задаёт отдельное изображение.
     prompts = [
-        "A serene landscape with mountains and a lake at sunset",
-        "A futuristic city with flying cars and neon lights"
+        """Portrait of a young woman, natural skin texture, 
+        soft golden hour lighting, 85mm lens, 
+        shallow depth of field, cinematic photography, 
+        detailed eyes, realistic colors"""
     ]
 
     # Перечисляем нежелательные признаки для механизма guidance конвейера.
@@ -96,7 +98,7 @@ def main():
                 prompt=prompt,
                 negative_prompt=negative_prompt,
                 # Здесь задаём 4 шага вместо значения 25 по умолчанию в функции.
-                num_steps=4
+                num_steps=25
             )
             
             # Сохраняем PNG в текущей рабочей папке и открываем для просмотра.

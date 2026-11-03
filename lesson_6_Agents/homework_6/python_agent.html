@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Учебный проект: ИИ-агент для изучения Python</title>
+  <style>
+    :root {
+      --background: #f2f5fb;
+      --surface: #ffffff;
+      --text: #243247;
+      --muted: #56677d;
+      --primary: #324bb5;
+      --accent: #087e83;
+      --border: #dce3ee;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 40px auto;
+    }
+
+    header {
+      padding: 40px;
+      border-radius: 24px;
+      background: linear-gradient(125deg, #283b91, #146c80);
+      color: white;
+    }
+
+    .label {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.2;
+    }
+
+    header p:last-child {
+      margin-bottom: 0;
+      color: #edf2ff;
+    }
+
+    section {
+      margin-top: 24px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgb(30 50 90 / 4%);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      color: var(--primary);
+      font-size: 25px;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 19px;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    .note {
+      margin-top: 20px;
+      padding: 18px 22px;
+      border-left: 5px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      background: #edf8f7;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 16px;
+    }
+
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf1fc;
+      color: #293d91;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 26px;
+    }
+
+    li {
+      padding-left: 6px;
+      margin-bottom: 14px;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    li::marker {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #edf1f7;
+      font-family: Consolas, monospace;
+      font-size: 0.92em;
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      margin: 12px 0 20px;
+      padding: 20px;
+      overflow-x: auto;
+      border-radius: 12px;
+      background: #182337;
+      color: #e3edff;
+      line-height: 1.6;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      overflow-wrap: normal;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .example {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .example h3 {
+      margin-top: 0;
+    }
+
+    .before {
+      border-top: 4px solid #b64848;
+    }
+
+    .after {
+      border-top: 4px solid #16816a;
+    }
+
+    .before h3 {
+      color: #a33131;
+    }
+
+    .after h3 {
+      color: #126b58;
+    }
+
+    footer {
+      padding: 24px 10px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        margin: 20px auto;
+      }
+
+      header, section {
+        padding: 24px;
+      }
+
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        font-size: 12pt;
+      }
+
+      main {
+        width: 100%;
+        margin: 0;
+      }
+
+      header {
+        background: white;
+        color: var(--text);
+        border: 2px solid var(--primary);
+      }
+
+      header p:last-child {
+        color: var(--text);
+      }
+
+      section {
+        box-shadow: none;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .example, .note, tr {
+        break-inside: avoid;
+      }
+
+      footer {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="label">Учебное задание · Проектирование ИИ-агента</p>
+      <h1>Агент-помощник для изучения Python</h1>
+      <p>
+        Идея простого агента, который помогает находить ошибки в коде,
+        объясняет их причины и предлагает понятные исправления.
+      </p>
+    </header>
+
+    <section aria-labelledby="idea">
+      <h2 id="idea">1. Идея и назначение</h2>
+      <p>
+        Я предлагаю создать ИИ-агента для начинающего программиста.
+        Пользователь передаёт ему код Python и, если программа завершилась
+        с ошибкой, сообщение об этой ошибке.
+      </p>
+      <p>
+        Агент изучает полученные данные, выбирает подходящие инструменты
+        проверки и предлагает исправление с объяснением.
+      </p>
+
+      <div class="note">
+        <strong>Почему это полезно мне:</strong>
+        во время изучения Python важно не только исправить код,
+        но и понять причину ошибки. Такой помощник позволит
+        разбирать затруднения и постепенно учиться находить их самостоятельно.
+      </div>
+    </section>
+
+    <section aria-labelledby="tools">
+      <h2 id="tools">2. Необходимые инструменты</h2>
+
+      <div class="table-container">
+        <table>
+          <caption style="text-align: left; margin-bottom: 12px;">
+            Инструменты агента и их назначение
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Инструмент</th>
+              <th scope="col">Для чего нужен</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Языковая модель, например Gemini</th>
+              <td>
+                Анализирует код и сообщения об ошибках,
+                формулирует объяснения и предлагает исправления.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Чтение Python-файлов</th>
+              <td>
+                Получает исходный код из файла, выбранного пользователем.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Модуль Python <code>ast</code></th>
+              <td>
+                Проверяет синтаксис без выполнения программы.
+                Например, помогает обнаружить пропущенное двоеточие
+                или незакрытую скобку.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Поиск по учебным материалам</th>
+              <td>
+                Находит объяснения и примеры по теме ошибки
+                в подготовленных конспектах.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Консольный интерфейс</th>
+              <td>
+                Позволяет указать файл, передать сообщение об ошибке,
+                ответить на уточняющие вопросы и прочитать результат.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="workflow">
+      <h2 id="workflow">3. Порядок работы агента</h2>
+
+      <ol>
+        <li>
+          <strong>Получение задачи.</strong>
+          Пользователь указывает файл с кодом, описывает ожидаемый результат
+          и при необходимости передаёт сообщение об ошибке.
+        </li>
+        <li>
+          <strong>Первичный анализ.</strong>
+          Агент читает код и определяет, достаточно ли информации.
+          Если проблема неясна, задаёт уточняющий вопрос.
+        </li>
+        <li>
+          <strong>Выбор инструмента.</strong>
+          Для проверки синтаксиса агент использует <code>ast</code>.
+          Для объяснения незнакомой конструкции может обратиться
+          к учебным материалам.
+        </li>
+        <li>
+          <strong>Подготовка исправления.</strong>
+          На основе кода, сообщения об ошибке и результатов проверки
+          агент предлагает исправленный фрагмент.
+        </li>
+        <li>
+          <strong>Повторная проверка.</strong>
+          Агент проверяет синтаксис предложенного варианта.
+          Если проверка обнаружила ошибку, дорабатывает решение.
+        </li>
+        <li>
+          <strong>Объяснение результата.</strong>
+          Пользователь получает причину ошибки, исправленный код
+          и пояснение внесённых изменений. Исходный файл изменяется
+          только после согласия пользователя.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="example">
+      <h2 id="example">4. Пример использования</h2>
+      <p>
+        Пользователь сообщает, что программа не выводит приветствие,
+        и передаёт следующий код.
+      </p>
+
+      <div class="comparison">
+        <article class="example before">
+          <h3>Исходный код</h3>
+          <pre><code>name = input("Введите имя: ")
+print("Привет, " + Name)</code></pre>
+          <p>
+            Создана переменная <code>name</code>,
+            а при выводе используется <code>Name</code>.
+          </p>
+        </article>
+
+        <article class="example after">
+          <h3>Исправленный код</h3>
+          <pre><code>name = input("Введите имя: ")
+print("Привет, " + name)</code></pre>
+          <p>
+            При вводе и выводе используется одно и то же имя переменной.
+          </p>
+        </article>
+      </div>
+
+      <h3>Объяснение агента</h3>
+      <p>
+        Python различает строчные и прописные буквы:
+        <code>name</code> и <code>Name</code> — разные имена.
+        В приведённой программе переменная <code>Name</code> не определена,
+        поэтому при выполнении возникнет <code>NameError</code>.
+      </p>
+
+      <div class="note">
+        <strong>Что показывает этот пример:</strong>
+        проверка через <code>ast</code> не обнаружит такую ошибку,
+        поскольку синтаксис корректен. Для её выявления агент
+        анализирует имена переменных и сообщение об ошибке.
+        Успешная проверка синтаксиса не гарантирует правильность работы программы.
+      </div>
+    </section>
+
+    <section aria-labelledby="agent">
+      <h2 id="agent">5. Почему это агент</h2>
+      <p>
+        Помощник не ограничивается одним ответом модели.
+        Он выбирает следующий шаг в зависимости от задачи:
+        проверяет синтаксис, ищет учебный материал или запрашивает
+        недостающие сведения. Затем оценивает полученный результат
+        и при необходимости повторяет проверку.
+      </p>
+      <p>
+        <strong>Ожидаемый результат:</strong>
+        пользователь получает обоснованное исправление
+        и понимает, почему оно необходимо.
+      </p>
+    </section>
+
+    <footer>
+      Концепция учебного проекта · ИИ-агент для помощи начинающему программисту
+    </footer>
+  </main>
+</body>
+</html>
