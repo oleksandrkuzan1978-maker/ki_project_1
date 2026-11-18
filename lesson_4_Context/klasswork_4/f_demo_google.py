@@ -1,23 +1,35 @@
+# Доступ к переменным окружения, где хранится ключ API.
 import os
+# NumPy помогает работать с числовыми массивами и векторами.
 import numpy as np
+# FAISS ищет похожие числовые векторы.
 import faiss
 
+# Загружаем настройки из файла .env.
 from dotenv import load_dotenv
+# Библиотека для обращения к моделям Google через API.
 import google.generativeai as genai
 
+# Добавляем значения из .env в переменные окружения.
 load_dotenv()
 
+# Читаем ключ доступа к Gemini.
 api_key = os.getenv("GEMINI_API_KEY")
 
+# Если ключ отсутствует или пуст, останавливаем программу с ошибкой.
 if not api_key:
     raise ValueError("Не найден GEMINI_API_KEY в файле .env")
 
+# Передаём библиотеке ключ для запросов к API.
 genai.configure(api_key=api_key)
 
+# Модель превращает текст в вектор — набор чисел, отражающий его смысл.
 EMBEDDING_MODEL = "models/gemini-embedding-001"
+# Просим модель возвращать вектор из 768 чисел.
 EMBEDDING_DIMENSION = 768
 
 
+# Набор фраз, среди которых будем искать похожие по смыслу.
 texts_to_index = [
     "Кошка сидит на окне",
     "Собака играет в парке",
@@ -62,7 +74,9 @@ texts_to_index = [
 ]
 
 
+# Получаем вектор текста; task_type задаёт его роль: документ или запрос.
 def get_embedding(text, task_type):
+    # Отправляем текст в Google API для вычисления вектора.
     response = genai.embed_content(
         model=EMBEDDING_MODEL,
         content=text,
@@ -70,77 +84,110 @@ def get_embedding(text, task_type):
         output_dimensionality=EMBEDDING_DIMENSION
     )
 
+    # Преобразуем ответ API в массив чисел формата float32 для FAISS.
     return np.asarray(
         response["embedding"],
         dtype=np.float32
     )
 
+# Создаём поисковый индекс из векторов всех фраз.
 def build_index(texts):
+    # Здесь будем накапливать векторы текстов.
     embeddings = []
 
+    # Перебираем фразы с нумерацией от 1 для вывода прогресса.
     for i, text in enumerate(texts, start=1):
         print(f"Индексация {i}/{len(texts)}: {text}")
 
+        # Вычисляем вектор очередной фразы.
         vector = get_embedding(
             text,
+            # Указываем, что это текст для поисковой базы.
             task_type="RETRIEVAL_DOCUMENT"
         )
 
+        # Добавляем полученный вектор в список.
         embeddings.append(vector)
 
+    # Создаём массив с непрерывным размещением в памяти для FAISS.
     embeddings_array = np.ascontiguousarray(
+        # Собираем векторы в таблицу: одна строка на каждый текст.
         np.stack(embeddings),
         dtype=np.float32
     )
+    # Приводим длину каждого вектора к 1 для сравнения направлений.
     faiss.normalize_L2(embeddings_array)
 
+    # Число столбцов — это количество чисел в одном векторе.
     dimension = embeddings_array.shape[1]
 
+    # Индекс сравнивает скалярные произведения; после нормализации это косинусное сходство.
     index = faiss.IndexFlatIP(dimension)
+    # Сохраняем векторы в индексе в том же порядке, что и исходные тексты.
     index.add(embeddings_array)
 
+    # Возвращаем готовый поисковый индекс.
     return index
 
 
+# Ищем k текстов, наиболее близких по смыслу к запросу; по умолчанию — 4.
 def semantic_search(query, index, texts, k=4):
+    # Превращаем поисковый запрос в вектор.
     query_embedding = get_embedding(
         query,
+        # Указываем, что этот текст является поисковым запросом.
         task_type="RETRIEVAL_QUERY"
     )
 
+    # Готовим массив запроса в формате, подходящем для FAISS.
     query_array = np.ascontiguousarray(
+        # Делаем одну строку; число столбцов NumPy определяет автоматически.
         query_embedding.reshape(1, -1),
         dtype=np.float32
     )
 
+    # Нормализуем запрос так же, как векторы текстов.
     faiss.normalize_L2(query_array)
 
+    # Не запрашиваем больше результатов, чем есть в индексе.
     k = min(k, index.ntotal)
 
+    # Получаем оценки сходства и номера найденных текстов.
     scores, indices = index.search(query_array, k)
 
+    # Список для найденных текстов и их оценок.
     results = []
 
+    # Попарно перебираем оценки и номера для единственного запроса.
     for score, idx in zip(scores[0], indices[0]):
+        # Номер -1 означает отсутствие результата; пропускаем его.
         if idx == -1:
             continue
 
+        # Добавляем исходный текст и оценку; чем она выше, тем больше сходство.
         results.append({
             "text": texts[idx],
+            # Преобразуем число NumPy в обычное число Python.
             "similarity": float(score)
         })
 
+    # Возвращаем список результатов поиска.
     return results
 
 
+# Этот блок выполняется при запуске файла, но не при его импорте.
 if __name__ == "__main__":
+    # Вычисляем векторы всех фраз и создаём индекс в памяти.
     index = build_index(texts_to_index)
 
+    # Выводим длину вектора и количество сохранённых векторов.
     print("\nРазмерность индекса:", index.d)
     print("Количество векторов:", index.ntotal)
 
+    # Текст запроса, по которому будем искать.
     search_query = "Питание кошек"
 
+    # Запускаем поиск четырёх наиболее похожих фраз.
     results = semantic_search(
         search_query,
         index,
@@ -151,8 +198,10 @@ if __name__ == "__main__":
     print("\n--- Результаты семантического поиска ---")
     print(f"Запрос: {search_query}")
 
+    # Выводим найденные фразы и оценки сходства (это не проценты).
     for result in results:
         print(
             f"- {result['text']} "
+            # Формат .4f оставляет четыре знака после десятичной точки.
             f"(similarity: {result['similarity']:.4f})"
         )
